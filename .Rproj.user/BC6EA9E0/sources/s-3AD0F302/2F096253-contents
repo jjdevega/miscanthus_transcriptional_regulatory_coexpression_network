@@ -1,0 +1,468 @@
+---
+title: "Inference and analysis of the Transcriptional Regulatory Network (TRN) in Miscanthus genotypes"
+output: html_document
+html_document:
+toc: true
+number_sections: true
+
+theme: united
+highlight: tango
+df_print: paged
+
+knit: (function(input_file, encoding) {
+  out_dir <- '.';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+---
+
+
+```{r set environment}
+setwd("~/analysis/miscanthus-rnaseq-Msin/github_miscanthus_transcriptional_regulatory_coexpression_network")
+
+library(RTN)
+library(RedeR)
+#library(rJava)
+#library(pheatmap)
+#library(RColorBrewer)
+
+sessionInfo()
+```
+
+
+```{r TRN inference}
+vst <- read.delim("input/deseq2_vst.csv", header = T, sep = ',', row.names = 1)
+vst <- as.matrix(vst)
+
+tfs_list <- read.delim("input/Msin_TFs_list.txt", header = FALSE)
+tfs_list <- as.vector(unlist(tfs_list))
+
+
+# my.rtni <- tni.constructor(expData = vst, 
+#                         regulatoryElements = tfs_list)
+# 
+# 
+# my.rtni <- tni.permutation(my.rtni) #pval default 0.01
+# my.rtni <- tni.bootstrap(my.rtni)
+# my.rtni <- tni.dpi.filter(my.rtni) #default eps=0
+# save(my.rtni, file="my.rtni_RTN.Rdata")
+load("my_rtni_RTN.Rdata")
+
+```
+
+
+
+
+```{r extract information from the TRN}
+
+tni.regulon.summary(my.rtni)
+#tni.regulon.summary(my.rtni, regulatoryElements = "Misin01G019100.1")
+
+
+my.tnet <- tni.get(my.rtni, what = "tnet") 
+#write.csv(my.tnet,file="RTN_Mutual_Information_regulators_targets.csv")
+my.refnet <- tni.get(my.rtni, what = "refnet") 
+my.regulons <- tni.get(my.rtni, what = "regulons.and.mode") 
+
+```
+
+
+
+
+
+```{bash}
+###NEEDED TO PLOT A NETWORK FOR ONE TF (NEXT BLOCK)
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+```
+
+```{r PLOT A NETWORK FOR ONE TF, message=FALSE, warning=FALSE}
+
+###PLOT A NETWORK FOR ONE TF
+
+# #export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+# rdp <- RedPort()
+# calld(rdp, checkcalls=TRUE)
+# g <- tni.graph(my.rtni, tfs = "Misin01G000800.1") 
+# #replace tfs with regulatoryElements in newer versions of the library
+# 
+# rdp <- RedPort()
+# calld(rdp)
+# addGraph(rdp, g, layout=NULL)
+# addLegend.color(rdp, g, type="edge")
+# addLegend.shape(rdp, g)
+# relax(rdp, ps = TRUE)
+
+
+```
+
+
+```{r load tables for TRN analysis (TNA) with the log2FC and list of DEGs from deseq2}
+
+#LEAF
+leaf.few.many <- read.csv(file = "input/leaf_few_many.csv", header = T, sep = ',')
+foldchange.leaf.few.many <- setNames(unlist(leaf.few.many$log2FoldChange), unlist(leaf.few.many$X))
+#this creates an "named numeric vector"
+# foldchange.leaf.few.many[1:10]
+# MisinT562900.1 MisinT352600.1 MisinT352700.1 MisinT352800.1 MisinT352900.1 MisinT526100.1 MisinT287300.1 MisinT287400.1 
+# 0.011637136    0.011268459   -0.049725130   -0.018087613   -0.018192030   -0.105505799    0.006179712    0.000000000 
+# MisinT287500.1 MisinT287600.1 
+# 0.001096978    0.057356938 
+# length(foldchange.leaf.few.many)
+# [1] 67789
+leaf.few.many.005 <- read.csv(file = "input/leaf_few_many_padj005_list.csv", header = T, sep = ',')
+leaf.few.many.005 <- as.vector(unlist(leaf.few.many.005$X))
+
+
+#root
+root.few.many <- read.csv(file = "input/roots_few_many.csv", header = T, sep = ',')
+foldchange.root.few.many <- setNames(unlist(root.few.many$log2FoldChange), unlist(root.few.many$X))
+#this creates an "named numeric vector"
+root.few.many.005 <- read.csv(file = "input/root_few_many_padj005_list.csv", header = T, sep = ',')
+root.few.many.005 <- as.vector(unlist(root.few.many.005$X))
+
+#stem
+stem.few.many <- read.csv(file = "input/stem_few_many.csv", header = T, sep = ',')
+foldchange.stem.few.many <- setNames(unlist(stem.few.many$log2FoldChange), unlist(stem.few.many$X))
+#this creates an "named numeric vector"
+stem.few.many.005 <- read.csv(file = "input/stem_few_many_padj005_list.csv", header = T, sep = ',')
+stem.few.many.005 <- as.vector(unlist(stem.few.many.005$X))
+
+
+```
+
+
+```{r Enrichment analysis each regulon-targets VS DEGs}
+
+###SLOW CALCULATIONS
+
+# leaf.rtna <- tni2tna.preprocess(object = my.rtni, 
+#                            phenotype = foldchange.leaf.few.many, 
+#                            hits = leaf.few.many.005) 
+# 
+# leaf.rtna <- tna.mra(leaf.rtna, minRegulonSize = 5, verbose = T)
+# leaf.rtna <- tna.gsea1(leaf.rtna, minRegulonSize = 5, verbose = T)
+# leaf.rtna <- tna.gsea2(leaf.rtna, minRegulonSize = 5, verbose = T)
+#save(leaf.rtna, file="leaf.rtna_RTN.Rdata")
+
+
+
+
+
+#root
+# root.rtna <- tni2tna.preprocess(object = my.rtni, 
+#                                 phenotype = foldchange.root.few.many, 
+#                                 hits = root.few.many.005) 
+# root.rtna <- tna.mra(root.rtna, minRegulonSize = 5, verbose = T)
+# root.rtna <- tna.gsea1(root.rtna, minRegulonSize = 5, verbose = T)
+# root.rtna <- tna.gsea2(root.rtna, minRegulonSize = 5, verbose = T)
+#save(root.rtna, file="root.rtna_RTN.Rdata")
+
+#stem
+# stem.rtna <- tni2tna.preprocess(object = my.rtni, 
+#                                 phenotype = foldchange.stem.few.many, 
+#                                 hits = stem.few.many.005) 
+# stem.rtna <- tna.mra(stem.rtna, minRegulonSize = 5, verbose = T)
+# stem.rtna <- tna.gsea1(stem.rtna, minRegulonSize = 5, verbose = T)
+# stem.rtna <- tna.gsea2(stem.rtna, minRegulonSize = 5, verbose = T)
+#save(stem.rtna, file="stem.rtna_RTN.Rdata")
+
+load(file="root.rtna_RTN.Rdata")
+load(file="stem.rtna_RTN.Rdata")
+load(file="leaf.rtna_RTN.Rdata")
+
+```
+
+
+
+
+```{r extract results into tables}
+#####
+#CONTINUE TO EXTRACT RESULTS INTO TABLES
+####
+
+
+
+
+#extract mra
+write.csv(tna.get(stem.rtna, what="mra", ntop=-1),file="RTN_MRA-results_stem.csv")
+write.csv(tna.get(root.rtna, what="mra", ntop=-1),file="RTN_MRA-results_root.csv")
+write.csv(tna.get(leaf.rtna, what="mra", ntop=-1),file="RTN_MRA-results_leaf.csv")
+
+#join analysis to MRA_analysis.xlsx
+
+###significant_regulons_list.txt is a concatenated list of the TFs names from all three tissues from the MRA analysis
+
+
+
+
+```
+
+
+```{r extract list of members for each regulon}
+
+my.regulons <- tni.get(my.rtni, what = "regulons.and.mode") 
+regulons.list <- tni.get(my.rtni, what = "regulatoryElements") 
+
+###TAKES SEVERAL HOURS
+# regulons.members <- data.frame(TF=character(),MEMBERS=character())
+# names(regulons.members) <- c("TF","MEMBERS")
+# for(tf in as.vector(regulons.list) ){
+#   #print(names(my.regulons[[tf]]) )
+#   my.string <- paste("'", as.character(names(my.regulons[[tf]])),"\"",collapse=", ",sep="")
+#   tmp <- data.frame(TF=as.vector(tf), MEMBERS=my.string )
+#   regulons.members <- rbind(regulons.members, tmp)
+# }
+# write.csv(regulons.members, file="TRN_TF_regulon_members_list.txt")
+regulons.members <- read.delim("TRN_TF_regulon_members_list.txt", header = T, row.names = 1)
+
+# #create a mapping (2 column file) between TFs and targets:
+# tf.target <- data.frame(TF=character(),TARGET=character())
+# #
+# names(tf.target) <- c("TF","TARGET")
+# #
+# for(tf in regulons.list){
+#   for(target in names(my.regulons[[tf]])){
+#     tmp <- data.frame(TF=tf, MEMBERS=target)
+#     tf.target <- rbind(tf.target, tmp)
+#   }
+# }
+# write.csv(tf.target, file="map_TF_to_target_2cols.csv")
+tf.target <- read.delim("map_TF_to_target_2cols.csv", header = T, row.names = 1)
+
+
+```
+
+
+
+
+```{r Extract also GSEA results from the comparison of regulon-target subsets and DEGs}
+
+#extract gsea1
+#GSEA-1T uses a rank-based scoring metric in order to test the association between the gene set and the phenotype
+#*ranked list of genes generated from a differential gene expression*
+write.csv(tna.get(stem.rtna, what="gsea1", ntop=100),file="RTN_GSEA1-results_stem.csv")
+write.csv(tna.get(root.rtna, what="gsea1", ntop=100),file="RTN_GSEA1-results_root.csv")
+write.csv(tna.get(leaf.rtna, what="gsea1", ntop=100),file="RTN_GSEA1-results_leaf.csv")
+
+#extract gsea2
+#separates the regulon into positive and negative targets 
+#and then assesses the distribution of the targets across the *ranked list of genes*.
+write.csv(tna.get(stem.rtna, what="gsea2", ntop=100),file="RTN_GSEA2-results_stem.csv")
+write.csv(tna.get(root.rtna, what="gsea2", ntop=100),file="RTN_GSEA2-results_root.csv")
+write.csv(tna.get(leaf.rtna, what="gsea2", ntop=100),file="RTN_GSEA2-results_leaf.csv")
+
+```
+
+
+
+```{r enrichment analysis of the overrepresented GO terms amogn the targets of a given regulon}
+
+#using the targets for a given TF as test-group against the GO annotation
+
+
+###########
+#enrichment analysis of GO terms with TOPGO
+###########
+#using the targets for a given TF as test-group against the GO annotation
+#all this code is from my notebook https://jjdevega.github.io/miscanthus_starch_rnaseq/
+
+#PREFLIGHT (load dependencies and functions)
+library(topGO,quietly = T)
+library(data.table,quietly = T)
+
+run.topgo.pipeline.BP <- function(mytemp) {
+  #PIPE starts
+  list.mytemp <- factor(as.integer(allgenes %in% mytemp))
+  names(list.mytemp) <- allgenes
+  #BP
+  fdata.mytemp.BP <- new("topGOdata", ontology="BP", allGenes=list.mytemp, annot = annFUN.gene2GO, gene2GO = geneID2GO)
+  #  results.fdata.mytemp.BP <- GenTable(fdata.mytemp.BP, weight_fisher = runTest(fdata.mytemp.BP, algorithm = "weight", statistic = "fisher"), elim_fisher = runTest(fdata.mytemp.BP, algorithm = "elim", statistic = "fisher"), weight01_fisher = runTest(fdata.mytemp.BP, algorithm = "weight01", statistic = "fisher"), topNodes=150)
+  results.fdata.mytemp.BP <- GenTable(fdata.mytemp.BP, weight01_fisher = runTest(fdata.mytemp.BP, algorithm = "weight01", statistic = "fisher"), topNodes=150)
+  #add genes to dataframe
+  results.fdata.mytemp.BP$genes <-   sapply(results.fdata.mytemp.BP$GO.ID, function(x) {
+    genes<- genesInTerm(fdata.mytemp.BP, x)  
+    genes[[1]][genes[[1]] %in% mytemp]
+  })
+  results.fdata.mytemp.BP  
+}
+
+#MF
+run.topgo.pipeline.MF <- function(mytemp) {
+  list.mytemp <- factor(as.integer(allgenes %in% mytemp))
+  names(list.mytemp) <- allgenes
+  fdata.mytemp.MF <- new("topGOdata", ontology="MF", allGenes=list.mytemp, annot = annFUN.gene2GO, gene2GO = geneID2GO)
+  #  results.fdata.mytemp.MF <- GenTable(fdata.mytemp.MF, weight_fisher = runTest(fdata.mytemp.MF, algorithm = "weight", statistic = "fisher"), elim_fisher = runTest(fdata.mytemp.MF, algorithm = "elim", statistic = "fisher"), weight01_fisher = runTest(fdata.mytemp.MF, algorithm = "weight01", statistic = "fisher"), topNodes=50)
+  results.fdata.mytemp.MF <- GenTable(fdata.mytemp.MF, weight01_fisher = runTest(fdata.mytemp.MF, algorithm = "weight01", statistic = "fisher"), topNodes=50)
+  #add genes to dataframe
+  results.fdata.mytemp.MF$genes <-   sapply(results.fdata.mytemp.MF$GO.ID, function(x) {
+    genes<-genesInTerm(fdata.mytemp.MF, x) 
+    genes[[1]][genes[[1]] %in% mytemp]
+  })
+  results.fdata.mytemp.MF
+}
+
+
+full.topgo.pipeline.BP <- function(mytemp) {
+  #PIPE starts
+  list.mytemp <- factor(as.integer(allgenes %in% mytemp))
+  names(list.mytemp) <- allgenes
+  #BP
+  fdata.mytemp.BP <- new("topGOdata", ontology="BP", allGenes=list.mytemp, annot = annFUN.gene2GO, gene2GO = geneID2GO)
+  #  results.fdata.mytemp.BP <- GenTable(fdata.mytemp.BP, weight_fisher = runTest(fdata.mytemp.BP, algorithm = "weight", statistic = "fisher"), elim_fisher = runTest(fdata.mytemp.BP, algorithm = "elim", statistic = "fisher"), weight01_fisher = runTest(fdata.mytemp.BP, algorithm = "weight01", statistic = "fisher"), topNodes=150)
+  results.fdata.mytemp.BP <- GenTable(fdata.mytemp.BP, weight01_fisher = runTest(fdata.mytemp.BP, algorithm = "weight01", statistic = "fisher"), topNodes=300)
+  #add genes to dataframe
+  results.fdata.mytemp.BP$genes <-   sapply(results.fdata.mytemp.BP$GO.ID, function(x) {
+    genes<- genesInTerm(fdata.mytemp.BP, x)  
+    genes[[1]][genes[[1]] %in% mytemp]
+  })
+  results.fdata.mytemp.BP  
+}
+
+#MF
+full.topgo.pipeline.MF <- function(mytemp) {
+  list.mytemp <- factor(as.integer(allgenes %in% mytemp))
+  names(list.mytemp) <- allgenes
+  fdata.mytemp.MF <- new("topGOdata", ontology="MF", allGenes=list.mytemp, annot = annFUN.gene2GO, gene2GO = geneID2GO)
+  #  results.fdata.mytemp.MF <- GenTable(fdata.mytemp.MF, weight_fisher = runTest(fdata.mytemp.MF, algorithm = "weight", statistic = "fisher"), elim_fisher = runTest(fdata.mytemp.MF, algorithm = "elim", statistic = "fisher"), weight01_fisher = runTest(fdata.mytemp.MF, algorithm = "weight01", statistic = "fisher"), topNodes=50)
+  results.fdata.mytemp.MF <- GenTable(fdata.mytemp.MF, weight01_fisher = runTest(fdata.mytemp.MF, algorithm = "weight01", statistic = "fisher"), topNodes=100)
+  #add genes to dataframe
+  results.fdata.mytemp.MF$genes <-   sapply(results.fdata.mytemp.MF$GO.ID, function(x) {
+    genes<-genesInTerm(fdata.mytemp.MF, x) 
+    genes[[1]][genes[[1]] %in% mytemp]
+  })
+  results.fdata.mytemp.MF
+}
+
+##END FUNCTIONS###
+
+
+
+#COMPUTE ENRICHMENT ANALYSIS
+library(topGO,quietly = T)
+library(data.table,quietly = T)
+library(dplyr,quietly = T)
+
+topgo.file <- read.delim("input/slim_annot_TOPGO.annot", header = F)
+geneID2GO <- readMappings(file = "input/slim_annot_TOPGO.annot")
+allgenes <- topgo.file$V1 #66789
+
+```
+
+
+
+
+```{r REGULON'S GENEONTOLOGY: EA-topgo for each TF, message=FALSE, warning=FALSE}
+
+library(dplyr)
+library(data.table)
+
+#extract list of targets for each significant MRA
+regulons.list <- tni.get(my.rtni, what = "regulatoryElements") 
+length(regulons.list) #4936
+my.regulons <- tni.get(my.rtni, what = "regulons.and.mode") 
+
+everyone <- data.frame()
+#loop that runs the BP analysisi for each TF in the list:
+for(i in as.vector(unlist(regulons.list))){
+  try({ 
+      #the try is a hack to prevent breaking the loop when no gene in the geneset has a GO annotation
+   myset <- names(my.regulons[[i]])
+   myBP <- run.topgo.pipeline.BP(myset)  %>% filter (Significant>=1) 
+   myBP$ID <- as.character(i)
+   myBP <- apply(myBP,2,as.character) #prevents error unimplemented type 'list' in 'EncodeElement'
+   everyone <- rbind(everyone,myBP)
+  } , silent=TRUE) 
+  dim(everyone)
+}
+
+write.csv(everyone,file="enrichment_analysis_everyTFs.csv")
+signif.everyone <- everyone  %>% filter (weight01_fisher<=0.05)
+write.csv(signif.everyone,file="enrichment_analysis_onlysignificantTFs.csv")
+
+#cat all these rows and filter for a FDR value (0.05) 
+#join analysis to MRA_analysis.xlsx
+
+```
+
+```{bash}
+#list every TF with a DE target (or DE TF itslef):
+cat map_TF_to_target_2cols.csv | fgrep -wf input/list_DEs_all.txt | cut -f2 -d ','| sort | uniq > map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv
+```
+
+```{bash}
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+```
+
+
+```{r EXPORT THE WHOLE NETWORK IGRAPH TO CYTOSCAPE}
+
+library(RedeR)
+load("my_rtni_RTN.Rdata")
+# export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+
+
+
+all1 <- read.csv("map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv", header = F)
+all1 <- as.vector(unlist(all1))
+length (all1)
+#[1] 1247
+
+rdp <- RedPort()
+calld(rdp, checkcalls=TRUE)
+g <- tni.graph(my.rtni, tfs = all1) #tfs with regulatoryElements in newer versions 
+addGraph(rdp, g, layout=NULL)
+#export as xmggl
+
+```
+
+
+
+```{r PLOT NETWORK FOR 28 HIGHLIGHTED TFs/REGULONS, message=FALSE, warning=FALSE}
+
+library(RedeR)
+load("my_rtni_RTN.Rdata")
+
+# #export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+
+
+selected <- c("Misin06G000800.1",
+"Misin06G257300.1",
+"Misin13G183300.1",
+"Misin05G004600.1",
+"Misin06G170200.1",
+"Misin04G243500.1",
+"Misin16G048700.1",
+"Misin12G092100.1",
+"Misin07G375400.1",
+"Misin18G114300.1",
+"Misin03G237200.1",
+"Misin04G316000.1",
+"Misin04G236800.1",
+"Misin01G452600.1",
+"Misin12G063100.1",
+"Misin02G383200.1",
+"Misin01G049500.1",
+"Misin03G207100.1",
+"Misin08G219000.1",
+"Misin07G253100.1",
+"Misin03G365800.1",
+"Misin07G160300.1",
+"Misin10G025900.1",
+"Misin07G012200.1",
+"Misin05G170700.1",
+"Misin06G026100.1",
+"Misin15G053900.1","MisinT099300.1")
+
+rdp <- RedPort()
+calld(rdp, checkcalls=TRUE)
+g <- tni.graph(my.rtni, tfs = selected) #tfs with regulatoryElements in newer versions 
+addGraph(rdp, g, layout=NULL)
+addLegend.color(rdp, g, type="edge")
+addLegend.shape(rdp, g)
+relax(rdp, ps = TRUE)
+
+#export to xgmml and import to cytoscape !!!
+
+```
+
+

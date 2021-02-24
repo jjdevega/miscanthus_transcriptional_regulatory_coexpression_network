@@ -1,0 +1,2 @@
+"0","#list every TF with a DE target (or DE TF itslef):
+cat map_TF_to_target_2cols.csv | fgrep -wf input/list_DEs_all.txt | cut -f2 -d ','| sort | uniq > map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv"

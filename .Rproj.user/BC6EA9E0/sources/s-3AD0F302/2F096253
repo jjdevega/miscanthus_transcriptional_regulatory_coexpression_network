@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1614205552019.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3408912995",
+    "id" : "2F096253",
+    "lastKnownWriteTime" : 1614206040,
+    "last_content_update" : 1614206040055,
+    "path" : "~/analysis/miscanthus-rnaseq-Msin/github_miscanthus_transcriptional_regulatory_coexpression_network/RTN_complete.Rmd",
+    "project_path" : "RTN_complete.Rmd",
+    "properties" : {
+        "cursorPosition" : "466,0",
+        "scrollLine" : "429"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
