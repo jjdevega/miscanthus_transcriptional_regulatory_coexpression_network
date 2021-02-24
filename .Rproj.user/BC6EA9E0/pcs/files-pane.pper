@@ -1,0 +1,9 @@
+{
+    "path" : "~/analysis/miscanthus-rnaseq-Msin/github_miscanthus_transcriptional_regulatory_coexpression_network",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
