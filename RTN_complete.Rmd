@@ -18,7 +18,7 @@ knit: (function(input_file, encoding) {
 
 
 ```{r set environment}
-setwd("~/analysis/miscanthus-rnaseq-Msin/miscanthus_transcriptional_regulatory_coexpression_network")
+setwd("~/analysis")
 
 library(RTN)
 library(RedeR)
@@ -38,14 +38,14 @@ tfs_list <- read.delim("input/Msin_TFs_list.txt", header = FALSE)
 tfs_list <- as.vector(unlist(tfs_list))
 
 
-# my.rtni <- tni.constructor(expData = vst, 
-#                         regulatoryElements = tfs_list)
-# 
-# 
-# my.rtni <- tni.permutation(my.rtni) #pval default 0.01
-# my.rtni <- tni.bootstrap(my.rtni)
-# my.rtni <- tni.dpi.filter(my.rtni) #default eps=0
-# save(my.rtni, file="my.rtni_RTN.Rdata")
+my.rtni <- tni.constructor(expData = vst,
+                        regulatoryElements = tfs_list)
+
+
+my.rtni <- tni.permutation(my.rtni) #pval default 0.01
+my.rtni <- tni.bootstrap(my.rtni)
+my.rtni <- tni.dpi.filter(my.rtni) #default eps=0
+save(my.rtni, file="my.rtni_RTN.Rdata")
 load("my_rtni_RTN.Rdata")
 
 ```
@@ -135,36 +135,36 @@ stem.few.many.005 <- as.vector(unlist(stem.few.many.005$X))
 
 ###SLOW CALCULATIONS
 
-# leaf.rtna <- tni2tna.preprocess(object = my.rtni, 
-#                            phenotype = foldchange.leaf.few.many, 
-#                            hits = leaf.few.many.005) 
-# 
-# leaf.rtna <- tna.mra(leaf.rtna, minRegulonSize = 5, verbose = T)
-# leaf.rtna <- tna.gsea1(leaf.rtna, minRegulonSize = 5, verbose = T)
-# leaf.rtna <- tna.gsea2(leaf.rtna, minRegulonSize = 5, verbose = T)
-#save(leaf.rtna, file="leaf.rtna_RTN.Rdata")
+leaf.rtna <- tni2tna.preprocess(object = my.rtni,
+                           phenotype = foldchange.leaf.few.many,
+                           hits = leaf.few.many.005)
+
+leaf.rtna <- tna.mra(leaf.rtna, minRegulonSize = 5, verbose = T)
+leaf.rtna <- tna.gsea1(leaf.rtna, minRegulonSize = 5, verbose = T)
+leaf.rtna <- tna.gsea2(leaf.rtna, minRegulonSize = 5, verbose = T)
+save(leaf.rtna, file="leaf.rtna_RTN.Rdata")
 
 
 
 
 
 #root
-# root.rtna <- tni2tna.preprocess(object = my.rtni, 
-#                                 phenotype = foldchange.root.few.many, 
-#                                 hits = root.few.many.005) 
-# root.rtna <- tna.mra(root.rtna, minRegulonSize = 5, verbose = T)
-# root.rtna <- tna.gsea1(root.rtna, minRegulonSize = 5, verbose = T)
-# root.rtna <- tna.gsea2(root.rtna, minRegulonSize = 5, verbose = T)
-#save(root.rtna, file="root.rtna_RTN.Rdata")
+root.rtna <- tni2tna.preprocess(object = my.rtni,
+                                phenotype = foldchange.root.few.many,
+                                hits = root.few.many.005)
+root.rtna <- tna.mra(root.rtna, minRegulonSize = 5, verbose = T)
+root.rtna <- tna.gsea1(root.rtna, minRegulonSize = 5, verbose = T)
+root.rtna <- tna.gsea2(root.rtna, minRegulonSize = 5, verbose = T)
+save(root.rtna, file="root.rtna_RTN.Rdata")
 
 #stem
-# stem.rtna <- tni2tna.preprocess(object = my.rtni, 
-#                                 phenotype = foldchange.stem.few.many, 
-#                                 hits = stem.few.many.005) 
-# stem.rtna <- tna.mra(stem.rtna, minRegulonSize = 5, verbose = T)
-# stem.rtna <- tna.gsea1(stem.rtna, minRegulonSize = 5, verbose = T)
-# stem.rtna <- tna.gsea2(stem.rtna, minRegulonSize = 5, verbose = T)
-#save(stem.rtna, file="stem.rtna_RTN.Rdata")
+stem.rtna <- tni2tna.preprocess(object = my.rtni,
+                                phenotype = foldchange.stem.few.many,
+                                hits = stem.few.many.005)
+stem.rtna <- tna.mra(stem.rtna, minRegulonSize = 5, verbose = T)
+stem.rtna <- tna.gsea1(stem.rtna, minRegulonSize = 5, verbose = T)
+stem.rtna <- tna.gsea2(stem.rtna, minRegulonSize = 5, verbose = T)
+save(stem.rtna, file="stem.rtna_RTN.Rdata")
 
 load(file="root.rtna_RTN.Rdata")
 load(file="stem.rtna_RTN.Rdata")
@@ -204,29 +204,31 @@ my.regulons <- tni.get(my.rtni, what = "regulons.and.mode")
 regulons.list <- tni.get(my.rtni, what = "regulatoryElements") 
 
 ###TAKES SEVERAL HOURS
-# regulons.members <- data.frame(TF=character(),MEMBERS=character())
-# names(regulons.members) <- c("TF","MEMBERS")
-# for(tf in as.vector(regulons.list) ){
-#   #print(names(my.regulons[[tf]]) )
-#   my.string <- paste("'", as.character(names(my.regulons[[tf]])),"\"",collapse=", ",sep="")
-#   tmp <- data.frame(TF=as.vector(tf), MEMBERS=my.string )
-#   regulons.members <- rbind(regulons.members, tmp)
-# }
-# write.csv(regulons.members, file="TRN_TF_regulon_members_list.txt")
+regulons.members <- data.frame(TF=character(),MEMBERS=character())
+names(regulons.members) <- c("TF","MEMBERS")
+for(tf in as.vector(regulons.list) ){
+  #print(names(my.regulons[[tf]]) )
+  my.string <- paste("'", as.character(names(my.regulons[[tf]])),"\"",collapse=", ",sep="")
+  tmp <- data.frame(TF=as.vector(tf), MEMBERS=my.string )
+  regulons.members <- rbind(regulons.members, tmp)
+}
+
+write.csv(regulons.members, file="TRN_TF_regulon_members_list.txt")
 regulons.members <- read.delim("TRN_TF_regulon_members_list.txt", header = T, row.names = 1)
 
 # #create a mapping (2 column file) between TFs and targets:
-# tf.target <- data.frame(TF=character(),TARGET=character())
-# #
-# names(tf.target) <- c("TF","TARGET")
-# #
-# for(tf in regulons.list){
-#   for(target in names(my.regulons[[tf]])){
-#     tmp <- data.frame(TF=tf, MEMBERS=target)
-#     tf.target <- rbind(tf.target, tmp)
-#   }
-# }
-# write.csv(tf.target, file="map_TF_to_target_2cols.csv")
+tf.target <- data.frame(TF=character(),TARGET=character())
+#
+names(tf.target) <- c("TF","TARGET")
+#
+for(tf in regulons.list){
+  for(target in names(my.regulons[[tf]])){
+    tmp <- data.frame(TF=tf, MEMBERS=target)
+    tf.target <- rbind(tf.target, tmp)
+  }
+}
+
+write.csv(tf.target, file="map_TF_to_target_2cols.csv")
 tf.target <- read.delim("map_TF_to_target_2cols.csv", header = T, row.names = 1)
 
 
@@ -364,10 +366,7 @@ my.regulons <- tni.get(my.rtni, what = "regulons.and.mode")
 everyone <- data.frame()
 
 #loop that runs the BP analysisi for each TF in the list:
-#for(i in as.vector(unlist(regulons.list))){
-
-#loop that runs the BP analysisi for the first 100 TFs in the list:
-for(i in as.vector(unlist(regulons.list[1:100]))){
+for(i in as.vector(unlist(regulons.list))){ #SLOOOWWWWWW
   try({ 
       #the try is a hack to prevent breaking the loop when no gene in the geneset has a GO annotation
    myset <- names(my.regulons[[i]])
@@ -379,7 +378,7 @@ for(i in as.vector(unlist(regulons.list[1:100]))){
   dim(everyone)
 }
 
-#write.csv(everyone,file="topgo_tfs_slim-enrichment_analysis_everyTFs.csv")
+write.csv(everyone,file="topgo_tfs_slim-enrichment_analysis_everyTFs.csv")
 
 #cat all these rows and filter for a FDR value (0.05) 
 #join analysis to xlsx
@@ -399,23 +398,23 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 
 ```{r EXPORT THE WHOLE NETWORK IGRAPH TO CYTOSCAPE}
 
-# library(RedeR)
-# load("my_rtni_RTN.Rdata")
+library(RedeR)
+load("my_rtni_RTN.Rdata")
 # # export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 # 
 # 
 # 
-# all1 <- read.csv("map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv", header = F)
-# all1 <- as.vector(unlist(all1))
-# length (all1)
+all1 <- read.csv("map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv", header = F)
+all1 <- as.vector(unlist(all1))
+length (all1)
 # #[1] 1247
 # 
-# rdp <- RedPort()
-# calld(rdp, checkcalls=TRUE)
-# g <- tni.graph(my.rtni, tfs = all1) #tfs with regulatoryElements in newer versions 
-# #addGraph(rdp, g, layout=NULL) #SLOW!
-# 
-# #and export as xmggl
+rdp <- RedPort()
+calld(rdp, checkcalls=TRUE)
+g <- tni.graph(my.rtni, tfs = all1) #tfs with regulatoryElements in newer versions
+addGraph(rdp, g, layout=NULL) #SLOW!
+
+#and export manually as xmggl
 
 ```
 
