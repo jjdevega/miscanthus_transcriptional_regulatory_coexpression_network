@@ -18,7 +18,7 @@ knit: (function(input_file, encoding) {
 
 
 ```{r set environment}
-setwd("~/analysis/miscanthus-rnaseq-Msin/github_miscanthus_transcriptional_regulatory_coexpression_network")
+setwd("~/analysis/miscanthus-rnaseq-Msin/miscanthus_transcriptional_regulatory_coexpression_network")
 
 library(RTN)
 library(RedeR)
@@ -351,7 +351,7 @@ allgenes <- topgo.file$V1 #66789
 
 
 
-```{r REGULON'S GENEONTOLOGY: EA-topgo for each TF, message=FALSE, warning=FALSE}
+```{r REGULONS GENEONTOLOGY: EA-topgo for each TF, message=FALSE, warning=FALSE}
 
 library(dplyr)
 library(data.table)
@@ -362,8 +362,12 @@ length(regulons.list) #4936
 my.regulons <- tni.get(my.rtni, what = "regulons.and.mode") 
 
 everyone <- data.frame()
+
 #loop that runs the BP analysisi for each TF in the list:
-for(i in as.vector(unlist(regulons.list))){
+#for(i in as.vector(unlist(regulons.list))){
+
+#loop that runs the BP analysisi for the first 100 TFs in the list:
+for(i in as.vector(unlist(regulons.list[1:100]))){
   try({ 
       #the try is a hack to prevent breaking the loop when no gene in the geneset has a GO annotation
    myset <- names(my.regulons[[i]])
@@ -375,12 +379,10 @@ for(i in as.vector(unlist(regulons.list))){
   dim(everyone)
 }
 
-write.csv(everyone,file="enrichment_analysis_everyTFs.csv")
-signif.everyone <- everyone  %>% filter (weight01_fisher<=0.05)
-write.csv(signif.everyone,file="enrichment_analysis_onlysignificantTFs.csv")
+#write.csv(everyone,file="topgo_tfs_slim-enrichment_analysis_everyTFs.csv")
 
 #cat all these rows and filter for a FDR value (0.05) 
-#join analysis to MRA_analysis.xlsx
+#join analysis to xlsx
 
 ```
 
@@ -391,28 +393,6 @@ cat map_TF_to_target_2cols.csv | fgrep -wf input/list_DEs_all.txt | cut -f2 -d '
 
 ```{bash}
 export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-```
-
-
-```{r EXPORT THE WHOLE NETWORK IGRAPH TO CYTOSCAPE}
-
-library(RedeR)
-load("my_rtni_RTN.Rdata")
-# export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-
-
-
-all1 <- read.csv("map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv", header = F)
-all1 <- as.vector(unlist(all1))
-length (all1)
-#[1] 1247
-
-rdp <- RedPort()
-calld(rdp, checkcalls=TRUE)
-g <- tni.graph(my.rtni, tfs = all1) #tfs with regulatoryElements in newer versions 
-addGraph(rdp, g, layout=NULL)
-#export as xmggl
-
 ```
 
 
@@ -464,5 +444,29 @@ relax(rdp, ps = TRUE)
 #export to xgmml and import to cytoscape !!!
 
 ```
+
+
+```{r EXPORT THE WHOLE NETWORK IGRAPH TO CYTOSCAPE}
+
+library(RedeR)
+load("my_rtni_RTN.Rdata")
+# export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+
+
+
+all1 <- read.csv("map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv", header = F)
+all1 <- as.vector(unlist(all1))
+length (all1)
+#[1] 1247
+
+rdp <- RedPort()
+calld(rdp, checkcalls=TRUE)
+g <- tni.graph(my.rtni, tfs = all1) #tfs with regulatoryElements in newer versions 
+#addGraph(rdp, g, layout=NULL) #SLOW!
+
+#and export as xmggl
+
+```
+
 
 
