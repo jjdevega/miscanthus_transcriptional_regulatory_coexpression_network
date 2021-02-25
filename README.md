@@ -7,7 +7,7 @@ This analysis is part of our manuscript:
 ## Summary
 The TRN inference and regulon enrichment analysis was done with RTN v. 2.10.1 (Fletcher, Castro et al. 2013) and topGO v. 2.38.1 (Alexa and Rahnenfuhrer 2010). 
 
-The code is fully available in an R notebook in this repository in Github. An online version of the R notebook is [available here](https://jjdevega.github.io/miscanthus_transcriptional_regulatory_coexpression_network/).
+The code is fully available in an R notebook (RTN_complete.Rmd) in this repository in Github. An online version of the R notebook is [available here](https://jjdevega.github.io/miscanthus_transcriptional_regulatory_coexpression_network/).
 
 
 
