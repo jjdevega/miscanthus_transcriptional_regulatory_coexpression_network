@@ -397,74 +397,25 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 
 
 
-```{r PLOT NETWORK FOR 28 HIGHLIGHTED TFs/REGULONS, message=FALSE, warning=FALSE}
-
-library(RedeR)
-load("my_rtni_RTN.Rdata")
-
-# #export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-
-
-selected <- c("Misin06G000800.1",
-"Misin06G257300.1",
-"Misin13G183300.1",
-"Misin05G004600.1",
-"Misin06G170200.1",
-"Misin04G243500.1",
-"Misin16G048700.1",
-"Misin12G092100.1",
-"Misin07G375400.1",
-"Misin18G114300.1",
-"Misin03G237200.1",
-"Misin04G316000.1",
-"Misin04G236800.1",
-"Misin01G452600.1",
-"Misin12G063100.1",
-"Misin02G383200.1",
-"Misin01G049500.1",
-"Misin03G207100.1",
-"Misin08G219000.1",
-"Misin07G253100.1",
-"Misin03G365800.1",
-"Misin07G160300.1",
-"Misin10G025900.1",
-"Misin07G012200.1",
-"Misin05G170700.1",
-"Misin06G026100.1",
-"Misin15G053900.1","MisinT099300.1")
-
-rdp <- RedPort()
-calld(rdp, checkcalls=TRUE)
-g <- tni.graph(my.rtni, tfs = selected) #tfs with regulatoryElements in newer versions 
-addGraph(rdp, g, layout=NULL)
-addLegend.color(rdp, g, type="edge")
-addLegend.shape(rdp, g)
-relax(rdp, ps = TRUE)
-
-#export to xgmml and import to cytoscape !!!
-
-```
-
-
 ```{r EXPORT THE WHOLE NETWORK IGRAPH TO CYTOSCAPE}
 
-library(RedeR)
-load("my_rtni_RTN.Rdata")
-# export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-
-
-
-all1 <- read.csv("map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv", header = F)
-all1 <- as.vector(unlist(all1))
-length (all1)
-#[1] 1247
-
-rdp <- RedPort()
-calld(rdp, checkcalls=TRUE)
-g <- tni.graph(my.rtni, tfs = all1) #tfs with regulatoryElements in newer versions 
-#addGraph(rdp, g, layout=NULL) #SLOW!
-
-#and export as xmggl
+# library(RedeR)
+# load("my_rtni_RTN.Rdata")
+# # export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+# 
+# 
+# 
+# all1 <- read.csv("map_TF_to_target_2cols-GREP-WITH-DE-LIST.csv", header = F)
+# all1 <- as.vector(unlist(all1))
+# length (all1)
+# #[1] 1247
+# 
+# rdp <- RedPort()
+# calld(rdp, checkcalls=TRUE)
+# g <- tni.graph(my.rtni, tfs = all1) #tfs with regulatoryElements in newer versions 
+# #addGraph(rdp, g, layout=NULL) #SLOW!
+# 
+# #and export as xmggl
 
 ```
 
