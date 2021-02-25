@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/341982589.svg)](https://zenodo.org/badge/latestdoi/341982589)
+
 ## Transcriptional regulatory co-expression network (TRN) inference and analysis of regulated target genes (regulons)
 This analysis is part of our manuscript:
 **Differential expression of starch and sucrose metabolic genes linked to varying biomass yield in Miscanthus hybrids** 
